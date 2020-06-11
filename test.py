@@ -8,4 +8,4 @@ while True:
   for row in e.board:
     print(*[x or "  " for x in row])
   print("-" * 23)
-  while not e.advance(tuple(map(int, input().split()))): pass
+  while not e.advance(tuple(map(int, input("[your move]: ").split()))): pass

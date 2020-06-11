@@ -14,4 +14,4 @@ def move(board):
   for row in board:
     print(*[x or "  " for x in row])
   print("-" * 23)
-  return tuple(map(int, input("[move]: ").split()))
+  return tuple(map(int, input("[engine move]: ").split()))
