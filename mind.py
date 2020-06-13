@@ -10,8 +10,8 @@ promotion; it can be omitted in other cases.
 """
 
 def move(board):
-  print("-" * 23)
   for row in board:
-    print(*[x or "  " for x in row])
-  print("-" * 23)
+    print("-" * 25)
+    print("|".join(["", *[x or "  " for x in row], ""]))
+  print("-" * 25)
   return tuple(map(int, input("[engine move]: ").split()))

@@ -1,0 +1,26 @@
+body {
+  font-size: min(6vw, 6vh);
+}
+
+table, tr, td {
+  border: 0px;
+  border-collapse: collapse;
+}
+
+td {
+  width: min(10vw, 10vh);
+  height: min(10vw, 10vh);
+  cursor: default;
+}
+
+.black-square:not(.select-cell) {
+  background-color: #338833;
+}
+
+.white-square:not(.select-cell) {
+  background-color: #eeeebb;
+}
+
+.select-cell {
+  background-color: #dddd66;
+}

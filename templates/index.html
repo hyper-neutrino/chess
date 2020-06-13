@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Chess Engine</title>
+    <link rel="stylesheet" href="/static/style.css" type="text/css" />
+    <script src="/static/script.js" type="text/javascript"></script>
+  </head>
+  
+  <body>
+    <center>
+      <table>
+        {%- for i in range(7, -1, -1) -%}
+        <tr>
+          {%- for j in range(8) -%}
+          <td id="block{{ i }}{{ j }}" class="{{ 'black-square' if (i + j) % 2 == 0 else 'white-square' }}" onclick="clicked({{ i }}, {{ j }})">
+            <center id="cell{{ i }}{{ j }}"></center>
+          </td>
+          {%- endfor -%}
+        </tr>
+        {%- endfor -%}
+      </table>
+    </center>
+  </body>
+</html>
