@@ -5,7 +5,32 @@ var game = null;
 
 var team = "W";
 
+var end = false;
+
+var moves = [];
+
+document.addEventListener("keydown", function(event) {
+  if (end) return;
+  if (event.keyCode == 32) {
+    fetch("/api", {
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify({
+        state: game,
+        move: 0,
+        team: team
+      })
+    }).then(response => response.json()).then(process);
+    sr = -1;
+    sf = -1;
+  }
+})
+
 function clicked(r, f) {
+  if (end) return;
   var old = document.getElementById("block" + sr + sf);
   if (old !== null) old.classList.remove("select-cell");
   if (sr == r && sf == f) {
@@ -46,14 +71,27 @@ function clicked(r, f) {
           move: move,
           team: team
         })
-      }).then(response => response.json()).then(state => {
-        if (load_state(state)) {
-          toggle();
-        }
-      });
+      }).then(response => response.json()).then(process);
       sr = -1;
       sf = -1;
     }
+  }
+}
+
+function process(state) {
+  if (load_state(state.result)) {
+    toggle();
+  }
+
+  console.log(state.move);
+  moves.push(state.move);
+
+  if (state.win == 1) {
+    alert("Checkmate!");
+    end = true;
+  } else if (state.win == -1) {
+    alert("Stalemate!");
+    end = true;
   }
 }
 

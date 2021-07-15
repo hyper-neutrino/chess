@@ -21,6 +21,11 @@ td {
   background-color: #eeeebb;
 }
 
+.edge {
+  font-family: monospace;
+  font-size: min(3vw, 3vh);
+}
+
 .select-cell {
   background-color: #dddd66;
 }

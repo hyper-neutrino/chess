@@ -1,24 +1,30 @@
-from mind import move
 from utils import *
 
-def create_game_state():
-  return [
-    [
-      ["RW", "NW", "BW", "QW", "KW", "BW", "NW", "RW"],
-      ["PW", "PW", "PW", "PW", "PW", "PW", "PW", "PW"],
-      [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ],
-      [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ],
-      [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ],
-      [""  , ""  , ""  , ""  , ""  , ""  , ""  , ""  ],
-      ["PB", "PB", "PB", "PB", "PB", "PB", "PB", "PB"],
-      ["RB", "NB", "BB", "QB", "KB", "BB", "NB", "RB"]
-    ],
-    [[True] * 8 for _ in range(8)],
-    -1
-  ]
+"""
+The chessboard will be given as a list of three values.
 
-def clone_state(state):
-  return [[[col for col in row] for row in state[0]], [[col for col in row] for row in state[1]], state[2]]
+The first is an 8x8 array with A1 at [0][0] and A8 at [0][7]. Each element will be the empty string
+to indicate a blank, or two characters indicating the piece (P = pawn, R = rook, N = knight, B = bishop, Q = queen,
+K = king) and the team (W = white, B = black).
+
+The second is an 8x8 array in the same format. Each element is true if the square has not been touched and false otherwise (just used for castling
+and pawn double-moves).
+
+The third is an integer. If the last move had a pawn make a double-move, it is the file of that pawn. Otherwise, it is -1 (used for en passant).
+
+The second parameter is a list of moves in the return format. If it is empty, you have lost, but this should never happen in theory.
+
+Your function `move([str[][] board, bool[][] original, int dfile], move[] moves): (int, int, int, int, [int])` must return a tuple `(w, x, y, z, [p])` representing a
+move of the piece on `(w, x)` to `(y, z)`. If this move is invalid you will immediately lose. If a pawn reaches the end
+rank, p represents the promotion: 0 for knight, 1 for bishop, 2 for rook, 3 for queen. This value is only checked on
+promotion; it can be omitted in other cases. Finally, p should equal 4 for queen-side castle and 5 for king-side castle.
+"""
+
+import random
+
+def move(state, moves):
+  return random.choice(moves)
+  return tuple(map(int, input("[engine move]: ").split()))
 
 def commit(state, *move):
   team = team_of(state[0][move[0]][move[1]])
@@ -41,54 +47,20 @@ def commit(state, *move):
       state[0][y][z] = "NBRQ"[p] + state[0][y][z][1]
     elif p == 4:
       state[0][w][0] = ""
-      state[0][w][2] = "R" + team
+      state[0][w][3] = "R" + team
       state[1][w][0] = False
     elif p == 5:
       state[0][w][7] = ""
       state[0][w][5] = "R" + team
       state[1][w][7] = False
 
-def make_move(state, move, team):
-  move = tuple(move)
-  print(move, team, state[2])
-  render(state)
-  clone = clone_state(state)
-  if move in non_check_moves(clone, team):
-    print("move made:", notate(clone, move))
-    commit(clone, *move)
-    return clone
-  print("invalid move; valid moves are:", *[notate(clone, m) for m in non_check_moves(clone, team)])
-  return False
-
-def team_of(piece):
-  return piece[1] if piece else "N"
-
-def opp(team):
-  if team == "W":
-    return "B"
-  if team == "B":
-    return "W"
-  raise RuntimeError("Team must be B/W")
-
-def render(state, move = (-1, -1, -1, -1)):
-  for r in range(7, -1, -1):
-    for f in range(9):
-      if r == move[0] and f == move[1] or r == move[2] and f - 1 == move[3]:
-        print(end = "<")
-      elif r == move[2] and f == move[3] or r == move[0] and f - 1 == move[1]:
-        print(end = ">")
-      else:
-        print(end = "|")
-      if f == 8:
-        print()
-      else:
-        team = team_of(state[0][r][f])
-        if team == "N":
-          print(end = " ")
-        elif team == "W":
-          print(end = "\033[7m\033[1m%s\033[0m" % state[0][r][f][0])
-        else:
-          print(end = state[0][r][f][0])
+def piece_list(state):
+  teams = {"W": [], "B": []}
+  for row in state[0]:
+    for piece in row:
+      if piece == "": continue
+      teams[piece[1]].append(piece[0])
+  return teams
 
 def notate(state, move):
   if state[0][move[0]][move[1]] == "":
@@ -125,6 +97,14 @@ def notate(state, move):
   commit(clone, *move)
   promo = "NBRQ"[move[4]] if len(move) >= 5 and 0 <= move[4] < 4 else ""
   return (notation or ("" if piece == "P" else piece) + disambiguator + ("x" if state[0][move[2]][move[3]] else "") + "abcdefgh"[move[3]] + str(move[2] + 1) + promo) + ("#" if is_checkmated(clone, opp(team)) else "+" if is_checked(clone, opp(team)) else "")
+
+def make_move(state, move, team):
+  move = tuple(move)
+  clone = clone_state(state)
+  if move in non_check_moves(clone, team):
+    commit(clone, *move)
+    return clone
+  return False
 
 def categorized_moves(state, team):
   categories = {x: [] for x in "PNBRQK"}
@@ -249,3 +229,10 @@ def is_checkmated(state, team):
   if not is_checked(state, team):
     return False
   return len(list(non_check_moves(state, team))) == 0
+
+def check_state(state, team):
+  if is_checkmated(state, team):
+    return 1 if team == "W" else 2
+  if len(list(non_check_moves(state, team))) == 0:
+    return 3
+  
